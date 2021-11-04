@@ -3,7 +3,7 @@ Implements EIP20 token standard: https://github.com/ethereum/EIPs/blob/master/EI
 .*/
 //John Parkhurst Implement EIP20 Token
 
-pragma solidity ^0.4.21;
+pragma solidity ^0.8.0;
 
 import "./EIP20Interface.sol";
 
