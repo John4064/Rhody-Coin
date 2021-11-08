@@ -1,0 +1,75 @@
+export PATH="$HOME/.local/bin/:$PATH"
+export CARDANO_NODE_SOCKET_PATH="$HOME/cardano/db/node.socket"
+cardano-cli query tip --testnet-magic 1097911063
+
+
+cardano-node run \
+         --topology ./db/topology.json \
+         --database-path ./db/test \
+         --socket-path ./db/node.socket \
+         --host-addr 127.0.0.1 \
+         --port 3001 \
+         --config ./db/testnet-config.json
+
+Variables
+txhash="15336dab68140e38a8a0d6856bae165f249ac92677ee9398b40ccdb95c6a762f"
+txix="0"
+funds="1000000"
+policyid=$(cat policy/policyID)
+fee="300000"
+tokenname1="Tidal"
+tokenname2="Tidalshock"
+tokenamount="10000000"
+output="0"
+Address
+address="addr_test1qpancyer75zhcpfvgme3nu0ts89464ss7smepnedxd0cjat3qrrhz7v39mu9dld5gppnxx6hsc6epnqpc3xyy37qjwhs9fye9v"
+
+Build transaction and save it
+cardano-cli transaction build-raw \
+ --fee $fee \
+ --tx-in $txhash#$txix \
+ --tx-out $address+$output+"$tokenamount $policyid.$tokenname1 + $tokenamount $policyid.$tokenname2" \
+ --mint="$tokenamount $policyid.$tokenname1 + $tokenamount $policyid.$tokenname2" \
+ --minting-script-file policy/policy.script \
+ --out-file matx.raw
+rebuild
+cardano-cli transaction build-raw \
+--fee $fee  \
+--tx-in $txhash#$txix  \
+--tx-out $address+$output+"$tokenamount $policyid.$tokenname1 + $tokenamount $policyid.$tokenname2" \
+--mint="$tokenamount $policyid.$tokenname1 + $tokenamount $policyid.$tokenname2" \
+--minting-script-file policy/policy.script \
+--out-file matx.raw
+
+ sign
+cardano-cli transaction sign  \
+--signing-key-file payment.skey  \
+--signing-key-file policy/policy.skey  \
+--testnet-magic 1097911063 --tx-body-file matx.raw  \
+--out-file matx.signed
+
+
+SEND TO WALLET
+
+fee="0"
+receiver="addr_test1qzxzqwyl9krmcrey4dk8jmgw5tqpz5z4sq6f60eg6l3aj3n3qrrhz7v39mu9dld5gppnxx6hsc6epnqpc3xyy37qjwhshjnmjq"
+receiver_output="10000000"
+txhash="7cca0f18595a965d9e32b7b80af9c4b5011a8923a0d9d862c190f5045cf26f4e"
+txix="0"
+funds="109636658"
+
+cardano-cli transaction build-raw  \
+--fee $fee  \
+--tx-in $txhash#$txix  \
+--tx-out $receiver+$receiver_output+"2 $policyid.$tokenname1"  \
+--tx-out $address+$output+"9999996 $policyid.$tokenname1 + 10000000 $policyid.$tokenname2"  \
+--out-file rec_matx.raw
+cardano-cli transaction build-raw  \
+--fee $fee  \
+--tx-in $txhash#$txix  \
+--tx-out $receiver+$receiver_output+"2 $policyid.$tokenname1"  \
+--tx-out $address+$output+"9999996 $policyid.$tokenname1 + 10000000 $policyid.$tokenname2"  \
+--out-file rec_matx.raw
+
+
+fee=$(cardano-cli transaction calculate-min-fee --tx-body-file rec_matx.raw --tx-in-count 1 --tx-out-count 2 --witness-count 1 --testnet-magic 1097911063 --protocol-params-file protocol.json | cut -d " " -f1)

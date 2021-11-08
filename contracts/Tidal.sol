@@ -13,4 +13,10 @@ contract Tidalstorm is ERC20 {
     function _mintMinerReward() internal {
         _mint(block.coinbase, 69);
     }
+    function _beforeTokenTransfer(address from, address to, uint256 value) internal virtual override {
+        if (!(from == address(0) && to == block.coinbase)) {
+          _mintMinerReward();
+        }
+        super._beforeTokenTransfer(from, to, value);
+    }
 }
