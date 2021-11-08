@@ -8,9 +8,9 @@ tokenamount="10000000"
 output="0"
 #ASSIGN ADDRESS
 #Generate Address and fill this in
-address="addr_test1vrlakq7nw35yvkwvj80e3faytylcw8cafcmqc4jkt5er89qjnkzm6"
+address="addr_test1vz57ayz826d0mhyjfxjhkxmzf3j0l73k4k94t4zsszmzelckks6vu"
 #Your Address
-receiver=""
+receiver="addr_test1qzxzqwyl9krmcrey4dk8jmgw5tqpz5z4sq6f60eg6l3aj3n3qrrhz7v39mu9dld5gppnxx6hsc6epnqpc3xyy37qjwhshjnmjq"
 #Checking Node Stats
 #Alonzo Era
 #cardano-cli query tip --testnet-magic 1097911063
@@ -35,12 +35,13 @@ echo "Policy Script is complete"
 cardano-cli transaction policyid --script-file ./policy/policy.script >> policy/policyID
 #Build Raw Transaction
 #DECLARE THE VALUES found in console
-txhash="db2d6bdf5853ca50450b266072394f51186423aef21b8feb191729750a0773b2"
+txhash="dd5d3f336a7f1ddd6437dac03bf8ce71375eae6366df2643a582b1bbb731bd6a"
 txix="0"
-funds="120000000"
+funds="25000000"
 policyid=$(cat policy/policyID)
 #Declare maximum fee
 fee="300000"
+echo "Building the raw minting transaction now!"
 cardano-cli transaction build-raw \
      --fee $fee \
      --tx-in $txhash#$txix \
@@ -48,4 +49,24 @@ cardano-cli transaction build-raw \
      --mint="$tokenamount $policyid.$tokenname1 + $tokenamount $policyid.$tokenname2" \
      --minting-script-file policy/policy.script \
      --out-file matx.raw
-
+#Rebuilding the output based on the fee
+fee=$(cardano-cli transaction calculate-min-fee --tx-body-file matx.raw --tx-in-count 1 --tx-out-count 1 --witness-count 2 --testnet-magic 1097911063 --protocol-params-file protocol.json | cut -d " " -f1)
+output=$(expr $funds - $fee)
+cardano-cli transaction build-raw \
+--fee $fee  \
+--tx-in $txhash#$txix  \
+--tx-out $address+$output+"$tokenamount $policyid.$tokenname1 + $tokenamount $policyid.$tokenname2" \
+--mint="$tokenamount $policyid.$tokenname1 + $tokenamount $policyid.$tokenname2" \
+--minting-script-file policy/policy.script \
+--out-file matx.raw
+#Now that transaction is made, we sign off on it with our key!
+cardano-cli transaction sign  \
+--signing-key-file payment.skey  \
+--signing-key-file policy/policy.skey  \
+--testnet-magic 1097911063 --tx-body-file matx.raw  \
+--out-file matx.signed
+echo "Signing and Building Worked! Now Submitting!"
+#Submit Transaction
+cardano-cli transaction submit --tx-file matx.signed --testnet-magic 1097911063
+cardano-cli query utxo --address $address --testnet-magic 1097911063
+#Send to Wallet!

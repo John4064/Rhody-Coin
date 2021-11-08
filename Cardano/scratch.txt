@@ -21,7 +21,7 @@ tokenname1="Tidal"
 tokenname2="Tidalshock"
 tokenamount="10000000"
 output="0"
-Address
+policyid="a040ba4b6c26d2bda76edd0bd5a91a97d217a2aceada33992a6262c9"
 address="addr_test1qpancyer75zhcpfvgme3nu0ts89464ss7smepnedxd0cjat3qrrhz7v39mu9dld5gppnxx6hsc6epnqpc3xyy37qjwhs9fye9v"
 
 Build transaction and save it
