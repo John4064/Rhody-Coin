@@ -2,13 +2,13 @@
 #CREATE NATIVE ASSET
 #Docs: https://developers.cardano.org/docs/native-tokens/minting
 #Global Variables
-tokenname1="Mortal"
+tokenname1="Rhody"
 #tokenname2="Egg"
 tokenamount="30000000"
 output="0"
 #ASSIGN ADDRESS
 #Generate Address and fill this in
-address="addr_test1vz57ayz826d0mhyjfxjhkxmzf3j0l73k4k94t4zsszmzelckks6vu"
+address="addr_test1vqf2qq7lqf0mzmssqgvhtmjsqxvsjl5yzk9ejdyan8524lqyvufxm"
 #Your Address
 receiver="addr_test1qzxzqwyl9krmcrey4dk8jmgw5tqpz5z4sq6f60eg6l3aj3n3qrrhz7v39mu9dld5gppnxx6hsc6epnqpc3xyy37qjwhshjnmjq"
 #Checking Node Stats
@@ -35,7 +35,13 @@ echo "Policy Script is complete"
 cardano-cli transaction policyid --script-file ./policy/policy.script >> policy/policyID
 #Build Raw Transaction
 #DECLARE THE VALUES found in console
-txhash="dd5d3f336a7f1ddd6437dac03bf8ce71375eae6366df2643a582b1bbb731bd6a"
+echo "What is the tx hash? "
+#read $txhash
+txhash="7a652fe371cb95fdce6f82fc5b86da522e5f3fb61740c168583d8c05c061c957"
+#echo "What is the txix?"
+#read $txix
+#echo "What is the funds? "
+#read $funds
 txix="0"
 funds="25000000"
 policyid=$(cat policy/policyID)
@@ -45,8 +51,8 @@ echo "Building the raw minting transaction now!"
 cardano-cli transaction build-raw \
      --fee $fee \
      --tx-in $txhash#$txix \
-     --tx-out $address+$output+"$tokenamount $policyid.$tokenname1 + $tokenamount $policyid.$tokenname2" \
-     --mint="$tokenamount $policyid.$tokenname1 + $tokenamount $policyid.$tokenname2" \
+     --tx-out $address+$output+"$tokenamount $policyid.$tokenname1" \
+     --mint="$tokenamount $policyid.$tokenname1" \
      --minting-script-file policy/policy.script \
      --out-file matx.raw
 #Rebuilding the output based on the fee
@@ -55,8 +61,8 @@ output=$(expr $funds - $fee)
 cardano-cli transaction build-raw \
 --fee $fee  \
 --tx-in $txhash#$txix  \
---tx-out $address+$output+"$tokenamount $policyid.$tokenname1 + $tokenamount $policyid.$tokenname2" \
---mint="$tokenamount $policyid.$tokenname1 + $tokenamount $policyid.$tokenname2" \
+--tx-out $address+$output+"$tokenamount $policyid.$tokenname1" \
+--mint="$tokenamount $policyid.$tokenname1" \
 --minting-script-file policy/policy.script \
 --out-file matx.raw
 #Now that transaction is made, we sign off on it with our key!
